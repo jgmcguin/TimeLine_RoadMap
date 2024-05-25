@@ -60,6 +60,7 @@
     <Compile Include="Roster.Designer.cs">
       <DependentUpon>Roster.cs</DependentUpon>
     </Compile>
+    <Compile Include="SavedInfo.cs" />
     <Compile Include="Timeline.cs">
       <SubType>Form</SubType>
     </Compile>

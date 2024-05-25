@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace TimelineCreator
 {
+    //This form allows you to see the List of people and a description of the person.
     public partial class Roster : Form
     {
         public Dictionary<string, List<string>> RosterList

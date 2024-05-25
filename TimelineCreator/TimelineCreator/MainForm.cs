@@ -31,7 +31,7 @@ namespace TimelineCreator
             InitializeComponent();
             TraitList = new List<string> { "Name", "Birthday", "EyeColor" };
             EventInfoList = new List<string> { "Name", "Date", "Place", "People" };
-            UpdateEnables();
+            //UpdateEnables();
         }
         public void UpdateUserInput()
         {
@@ -51,6 +51,7 @@ namespace TimelineCreator
             using (Timeline timeline = new Timeline()) 
             {
                 timeline.TimeLineInfo = GetConfigInfo(TIMELINE_NAME, "Event");
+
                 if (timeline.ShowDialog(this) == DialogResult.OK) 
                 {
                     //
