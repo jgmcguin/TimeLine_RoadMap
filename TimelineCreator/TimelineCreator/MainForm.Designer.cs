@@ -31,9 +31,9 @@
             this.txtEventName = new System.Windows.Forms.TextBox();
             this.lblEventName = new System.Windows.Forms.Label();
             this.lblAddEventTime = new System.Windows.Forms.Label();
-            this.txtEventTime = new System.Windows.Forms.TextBox();
             this.grpAddEvent = new System.Windows.Forms.GroupBox();
-            this.txtEventLocation = new System.Windows.Forms.TextBox();
+            this.dateTimePicker = new System.Windows.Forms.DateTimePicker();
+            this.comboEventLocation = new System.Windows.Forms.ComboBox();
             this.lblEventLocation = new System.Windows.Forms.Label();
             this.btnAddEvent = new System.Windows.Forms.Button();
             this.btnShowTimeline = new System.Windows.Forms.Button();
@@ -45,16 +45,18 @@
             this.btnAddNewPerson = new System.Windows.Forms.Button();
             this.txtNewPersonName = new System.Windows.Forms.TextBox();
             this.lblNewPersonName = new System.Windows.Forms.Label();
-            this.grpConnectPersonEvent = new System.Windows.Forms.GroupBox();
-            this.btnConnect = new System.Windows.Forms.Button();
-            this.cmbConnectEventName = new System.Windows.Forms.ComboBox();
-            this.cmbPersonName = new System.Windows.Forms.ComboBox();
-            this.lblConnectEventName = new System.Windows.Forms.Label();
-            this.lblPersonName = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
+            this.lblRoster = new System.Windows.Forms.Label();
+            this.txtRoster = new System.Windows.Forms.TextBox();
+            this.listRoster = new System.Windows.Forms.ListBox();
+            this.panTimeline = new System.Windows.Forms.Panel();
+            this.listLocations = new System.Windows.Forms.ListBox();
+            this.grpAddPeopleToEvent = new System.Windows.Forms.GroupBox();
+            this.comboConnectionEvents = new System.Windows.Forms.ComboBox();
+            this.comboConnectionPeople = new System.Windows.Forms.ComboBox();
+            this.btnAddPeopleToEvent = new System.Windows.Forms.Button();
             this.grpAddEvent.SuspendLayout();
             this.grpAddNewPerson.SuspendLayout();
-            this.grpConnectPersonEvent.SuspendLayout();
+            this.grpAddPeopleToEvent.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtEventName
@@ -83,23 +85,15 @@
             this.lblAddEventTime.TabIndex = 3;
             this.lblAddEventTime.Text = "Event Time";
             // 
-            // txtEventTime
-            // 
-            this.txtEventTime.Location = new System.Drawing.Point(49, 225);
-            this.txtEventTime.Name = "txtEventTime";
-            this.txtEventTime.Size = new System.Drawing.Size(166, 26);
-            this.txtEventTime.TabIndex = 2;
-            this.txtEventTime.TextChanged += new System.EventHandler(this.txtEventTime_TextChanged);
-            // 
             // grpAddEvent
             // 
-            this.grpAddEvent.Controls.Add(this.txtEventLocation);
+            this.grpAddEvent.Controls.Add(this.dateTimePicker);
+            this.grpAddEvent.Controls.Add(this.comboEventLocation);
             this.grpAddEvent.Controls.Add(this.lblEventLocation);
             this.grpAddEvent.Controls.Add(this.btnAddEvent);
             this.grpAddEvent.Controls.Add(this.txtEventName);
             this.grpAddEvent.Controls.Add(this.lblAddEventTime);
             this.grpAddEvent.Controls.Add(this.lblEventName);
-            this.grpAddEvent.Controls.Add(this.txtEventTime);
             this.grpAddEvent.Location = new System.Drawing.Point(31, 33);
             this.grpAddEvent.Name = "grpAddEvent";
             this.grpAddEvent.Size = new System.Drawing.Size(270, 323);
@@ -107,13 +101,23 @@
             this.grpAddEvent.TabStop = false;
             this.grpAddEvent.Text = "Add Event";
             // 
-            // txtEventLocation
+            // dateTimePicker
             // 
-            this.txtEventLocation.Location = new System.Drawing.Point(49, 143);
-            this.txtEventLocation.Name = "txtEventLocation";
-            this.txtEventLocation.Size = new System.Drawing.Size(166, 26);
-            this.txtEventLocation.TabIndex = 5;
-            this.txtEventLocation.TextChanged += new System.EventHandler(this.txtEventLocation_TextChanged);
+            this.dateTimePicker.Location = new System.Drawing.Point(46, 214);
+            this.dateTimePicker.Name = "dateTimePicker";
+            this.dateTimePicker.Size = new System.Drawing.Size(169, 26);
+            this.dateTimePicker.TabIndex = 14;
+            // 
+            // comboEventLocation
+            // 
+            this.comboEventLocation.FormattingEnabled = true;
+            this.comboEventLocation.Items.AddRange(new object[] {
+            "(+) New Location"});
+            this.comboEventLocation.Location = new System.Drawing.Point(49, 141);
+            this.comboEventLocation.Name = "comboEventLocation";
+            this.comboEventLocation.Size = new System.Drawing.Size(166, 28);
+            this.comboEventLocation.TabIndex = 7;
+            this.comboEventLocation.SelectedIndexChanged += new System.EventHandler(this.comboLocation_SelectedIndexChanged);
             // 
             // lblEventLocation
             // 
@@ -136,7 +140,7 @@
             // 
             // btnShowTimeline
             // 
-            this.btnShowTimeline.Location = new System.Drawing.Point(436, 400);
+            this.btnShowTimeline.Location = new System.Drawing.Point(31, 377);
             this.btnShowTimeline.Name = "btnShowTimeline";
             this.btnShowTimeline.Size = new System.Drawing.Size(165, 34);
             this.btnShowTimeline.TabIndex = 5;
@@ -221,81 +225,98 @@
             this.lblNewPersonName.TabIndex = 1;
             this.lblNewPersonName.Text = "Person Name";
             // 
-            // grpConnectPersonEvent
+            // lblRoster
             // 
-            this.grpConnectPersonEvent.Controls.Add(this.btnConnect);
-            this.grpConnectPersonEvent.Controls.Add(this.cmbConnectEventName);
-            this.grpConnectPersonEvent.Controls.Add(this.cmbPersonName);
-            this.grpConnectPersonEvent.Controls.Add(this.lblConnectEventName);
-            this.grpConnectPersonEvent.Controls.Add(this.lblPersonName);
-            this.grpConnectPersonEvent.Location = new System.Drawing.Point(691, 35);
-            this.grpConnectPersonEvent.Name = "grpConnectPersonEvent";
-            this.grpConnectPersonEvent.Size = new System.Drawing.Size(281, 249);
-            this.grpConnectPersonEvent.TabIndex = 7;
-            this.grpConnectPersonEvent.TabStop = false;
-            this.grpConnectPersonEvent.Text = "Connect a Person to an Event";
+            this.lblRoster.AutoSize = true;
+            this.lblRoster.Location = new System.Drawing.Point(981, 129);
+            this.lblRoster.Name = "lblRoster";
+            this.lblRoster.Size = new System.Drawing.Size(51, 20);
+            this.lblRoster.TabIndex = 11;
+            this.lblRoster.Text = "Notes";
             // 
-            // btnConnect
+            // txtRoster
             // 
-            this.btnConnect.Location = new System.Drawing.Point(106, 188);
-            this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Size = new System.Drawing.Size(85, 36);
-            this.btnConnect.TabIndex = 6;
-            this.btnConnect.Text = "Connect";
-            this.btnConnect.UseVisualStyleBackColor = true;
-            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
+            this.txtRoster.Location = new System.Drawing.Point(985, 152);
+            this.txtRoster.Multiline = true;
+            this.txtRoster.Name = "txtRoster";
+            this.txtRoster.Size = new System.Drawing.Size(334, 204);
+            this.txtRoster.TabIndex = 10;
             // 
-            // cmbConnectEventName
+            // listRoster
             // 
-            this.cmbConnectEventName.FormattingEnabled = true;
-            this.cmbConnectEventName.Location = new System.Drawing.Point(47, 154);
-            this.cmbConnectEventName.Name = "cmbConnectEventName";
-            this.cmbConnectEventName.Size = new System.Drawing.Size(198, 28);
-            this.cmbConnectEventName.TabIndex = 3;
+            this.listRoster.FormattingEnabled = true;
+            this.listRoster.ItemHeight = 20;
+            this.listRoster.Location = new System.Drawing.Point(665, 152);
+            this.listRoster.Name = "listRoster";
+            this.listRoster.Size = new System.Drawing.Size(120, 204);
+            this.listRoster.TabIndex = 9;
+            this.listRoster.SelectedValueChanged += new System.EventHandler(this.listRoster_SelectedValueChanged);
             // 
-            // cmbPersonName
+            // panTimeline
             // 
-            this.cmbPersonName.FormattingEnabled = true;
-            this.cmbPersonName.Location = new System.Drawing.Point(47, 75);
-            this.cmbPersonName.Name = "cmbPersonName";
-            this.cmbPersonName.Size = new System.Drawing.Size(198, 28);
-            this.cmbPersonName.TabIndex = 2;
+            this.panTimeline.Location = new System.Drawing.Point(31, 429);
+            this.panTimeline.Name = "panTimeline";
+            this.panTimeline.Size = new System.Drawing.Size(1288, 511);
+            this.panTimeline.TabIndex = 12;
             // 
-            // lblConnectEventName
+            // listLocations
             // 
-            this.lblConnectEventName.AutoSize = true;
-            this.lblConnectEventName.Location = new System.Drawing.Point(43, 120);
-            this.lblConnectEventName.Name = "lblConnectEventName";
-            this.lblConnectEventName.Size = new System.Drawing.Size(96, 20);
-            this.lblConnectEventName.TabIndex = 1;
-            this.lblConnectEventName.Text = "Event Name";
+            this.listLocations.FormattingEnabled = true;
+            this.listLocations.ItemHeight = 20;
+            this.listLocations.Location = new System.Drawing.Point(818, 152);
+            this.listLocations.Name = "listLocations";
+            this.listLocations.Size = new System.Drawing.Size(120, 204);
+            this.listLocations.TabIndex = 13;
             // 
-            // lblPersonName
+            // grpAddPeopleToEvent
             // 
-            this.lblPersonName.AutoSize = true;
-            this.lblPersonName.Location = new System.Drawing.Point(43, 47);
-            this.lblPersonName.Name = "lblPersonName";
-            this.lblPersonName.Size = new System.Drawing.Size(105, 20);
-            this.lblPersonName.TabIndex = 0;
-            this.lblPersonName.Text = "Person Name";
+            this.grpAddPeopleToEvent.Controls.Add(this.btnAddPeopleToEvent);
+            this.grpAddPeopleToEvent.Controls.Add(this.comboConnectionPeople);
+            this.grpAddPeopleToEvent.Controls.Add(this.comboConnectionEvents);
+            this.grpAddPeopleToEvent.Location = new System.Drawing.Point(654, 33);
+            this.grpAddPeopleToEvent.Name = "grpAddPeopleToEvent";
+            this.grpAddPeopleToEvent.Size = new System.Drawing.Size(665, 95);
+            this.grpAddPeopleToEvent.TabIndex = 14;
+            this.grpAddPeopleToEvent.TabStop = false;
+            this.grpAddPeopleToEvent.Text = "Add People to Event";
             // 
-            // button1
+            // comboConnectionEvents
             // 
-            this.button1.Location = new System.Drawing.Point(436, 440);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(165, 34);
-            this.button1.TabIndex = 8;
-            this.button1.Text = "Show Roster";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.comboConnectionEvents.FormattingEnabled = true;
+            this.comboConnectionEvents.Location = new System.Drawing.Point(11, 40);
+            this.comboConnectionEvents.Name = "comboConnectionEvents";
+            this.comboConnectionEvents.Size = new System.Drawing.Size(151, 28);
+            this.comboConnectionEvents.TabIndex = 0;
+            // 
+            // comboConnectionPeople
+            // 
+            this.comboConnectionPeople.FormattingEnabled = true;
+            this.comboConnectionPeople.Location = new System.Drawing.Point(205, 40);
+            this.comboConnectionPeople.Name = "comboConnectionPeople";
+            this.comboConnectionPeople.Size = new System.Drawing.Size(137, 28);
+            this.comboConnectionPeople.TabIndex = 1;
+            // 
+            // btnAddPeopleToEvent
+            // 
+            this.btnAddPeopleToEvent.Location = new System.Drawing.Point(376, 39);
+            this.btnAddPeopleToEvent.Name = "btnAddPeopleToEvent";
+            this.btnAddPeopleToEvent.Size = new System.Drawing.Size(141, 29);
+            this.btnAddPeopleToEvent.TabIndex = 2;
+            this.btnAddPeopleToEvent.Text = "Add";
+            this.btnAddPeopleToEvent.UseVisualStyleBackColor = true;
+            this.btnAddPeopleToEvent.Click += new System.EventHandler(this.btnAddPeopleToEvent_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1172, 595);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.grpConnectPersonEvent);
+            this.ClientSize = new System.Drawing.Size(1416, 901);
+            this.Controls.Add(this.grpAddPeopleToEvent);
+            this.Controls.Add(this.listLocations);
+            this.Controls.Add(this.panTimeline);
+            this.Controls.Add(this.lblRoster);
+            this.Controls.Add(this.txtRoster);
+            this.Controls.Add(this.listRoster);
             this.Controls.Add(this.grpAddNewPerson);
             this.Controls.Add(this.btnShowTimeline);
             this.Controls.Add(this.grpAddEvent);
@@ -305,9 +326,9 @@
             this.grpAddEvent.PerformLayout();
             this.grpAddNewPerson.ResumeLayout(false);
             this.grpAddNewPerson.PerformLayout();
-            this.grpConnectPersonEvent.ResumeLayout(false);
-            this.grpConnectPersonEvent.PerformLayout();
+            this.grpAddPeopleToEvent.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -316,27 +337,29 @@
         private System.Windows.Forms.TextBox txtEventName;
         private System.Windows.Forms.Label lblEventName;
         private System.Windows.Forms.Label lblAddEventTime;
-        private System.Windows.Forms.TextBox txtEventTime;
         private System.Windows.Forms.GroupBox grpAddEvent;
         private System.Windows.Forms.Button btnShowTimeline;
         private System.Windows.Forms.GroupBox grpAddNewPerson;
         private System.Windows.Forms.TextBox txtNewPersonName;
         private System.Windows.Forms.Label lblNewPersonName;
-        private System.Windows.Forms.GroupBox grpConnectPersonEvent;
-        private System.Windows.Forms.Label lblPersonName;
-        private System.Windows.Forms.Label lblConnectEventName;
-        private System.Windows.Forms.ComboBox cmbConnectEventName;
-        private System.Windows.Forms.ComboBox cmbPersonName;
         private System.Windows.Forms.Button btnAddEvent;
         private System.Windows.Forms.Button btnAddNewPerson;
-        private System.Windows.Forms.Button btnConnect;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TextBox txtNewPersonEyeColor;
         private System.Windows.Forms.Label lblNewPersonEyeColor;
         private System.Windows.Forms.TextBox txtNewPersonBirthday;
         private System.Windows.Forms.Label lblNewPersonBirthday;
-        private System.Windows.Forms.TextBox txtEventLocation;
         private System.Windows.Forms.Label lblEventLocation;
+        private System.Windows.Forms.Label lblRoster;
+        private System.Windows.Forms.TextBox txtRoster;
+        private System.Windows.Forms.ListBox listRoster;
+        private System.Windows.Forms.Panel panTimeline;
+        private System.Windows.Forms.ComboBox comboEventLocation;
+        private System.Windows.Forms.ListBox listLocations;
+        private System.Windows.Forms.DateTimePicker dateTimePicker;
+        private System.Windows.Forms.GroupBox grpAddPeopleToEvent;
+        private System.Windows.Forms.Button btnAddPeopleToEvent;
+        private System.Windows.Forms.ComboBox comboConnectionPeople;
+        private System.Windows.Forms.ComboBox comboConnectionEvents;
     }
 }
 

@@ -16,9 +16,8 @@ C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\Timeli
 C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.csproj.AssemblyReference.cache
 C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.MainForm.resources
 C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.Properties.Resources.resources
-C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.Roster.resources
-C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.Timeline.resources
 C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.csproj.GenerateResource.cache
 C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.csproj.CoreCompileInputs.cache
 C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.exe
 C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.pdb
+C:\Users\jgmcg\OneDrive\Documents\GitHub\TimeLine_RoadMap\TimelineCreator\TimelineCreator\obj\Debug\TimelineCreator.AddLocationForm.resources
