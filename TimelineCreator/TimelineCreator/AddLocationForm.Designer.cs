@@ -34,7 +34,7 @@
             this.lblLocationList = new System.Windows.Forms.Label();
             this.lblLocList = new System.Windows.Forms.Label();
             this.listLocations = new System.Windows.Forms.ListBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btnAddLocation = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtLocDesc
@@ -90,21 +90,22 @@
             this.listLocations.Size = new System.Drawing.Size(142, 224);
             this.listLocations.TabIndex = 6;
             // 
-            // button1
+            // btnAddLocation
             // 
-            this.button1.Location = new System.Drawing.Point(398, 59);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(70, 26);
-            this.button1.TabIndex = 7;
-            this.button1.Text = "Add";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnAddLocation.Location = new System.Drawing.Point(398, 59);
+            this.btnAddLocation.Name = "btnAddLocation";
+            this.btnAddLocation.Size = new System.Drawing.Size(74, 39);
+            this.btnAddLocation.TabIndex = 7;
+            this.btnAddLocation.Text = "Add";
+            this.btnAddLocation.UseVisualStyleBackColor = true;
+            this.btnAddLocation.Click += new System.EventHandler(this.btnAddLocation_Click);
             // 
             // AddLocationForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(636, 446);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnAddLocation);
             this.Controls.Add(this.listLocations);
             this.Controls.Add(this.lblLocList);
             this.Controls.Add(this.lblLocationList);
@@ -127,6 +128,6 @@
         private System.Windows.Forms.Label lblLocationList;
         private System.Windows.Forms.Label lblLocList;
         private System.Windows.Forms.ListBox listLocations;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btnAddLocation;
     }
 }

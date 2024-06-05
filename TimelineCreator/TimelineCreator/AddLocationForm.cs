@@ -12,7 +12,7 @@ namespace TimelineCreator
 {
     public partial class AddLocationForm : Form
     {
-        public Dictionary<string, List<string>> Location_Info {  get; set; }
+        public List<Location> Location_Info {  get; set; }
         public AddLocationForm()
         {
             InitializeComponent();
@@ -25,14 +25,21 @@ namespace TimelineCreator
         private void UpdateLocations()
         {
             listLocations.Items.Clear();
-            foreach (KeyValuePair<string, List<string>> location in Location_Info)
+            foreach (Location location in Location_Info)
             {
-                listLocations.Items.Add(location.Key);
+                listLocations.Items.Add(location.Name);
             }
         }
 
         private void AddLocationForm_Load(object sender, EventArgs e)
         {
+            UpdateLocations();
+        }
+
+        private void btnAddLocation_Click(object sender, EventArgs e)
+        {
+            if (txtNewLoc.Text != "")
+                Location_Info.Add(new Location(txtNewLoc.Text, txtLocDesc.Text));
             UpdateLocations();
         }
     }

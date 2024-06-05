@@ -26,14 +26,18 @@ namespace TimelineCreator
         private Dictionary<string, string> TimelineUserInput = new Dictionary<string, string>();
         private List<string> TimelineDates = new List<string>();
         private Dictionary<string, List<string>> NameAndInfo = new Dictionary<string, List<string>>();
-        private Dictionary<string, List<string>> LocationInfo = new Dictionary<string, List<string>>();
+        //private Dictionary<string, List<string>> LocationInfo = new Dictionary<string, List<string>>();
         private Dictionary<string, List<Point>> _NameToPoint = new Dictionary<string, List<Point>>(); // find color by using the index of the name in ColorList
         private List<string> TraitList;
         private List<string> EventInfoList;
         private List<string> LocInfoList;
         private Dictionary<string, int> LocToPoints = new Dictionary<string, int>();
         private Dictionary<string, int> EventToPoints = new Dictionary<string, int>();
-        public  List<Event> _Events = new List<Event>();
+        public List<Location> _Locations = new List<Location>();
+        public List<Person> _People = new List<Person>();
+        public List<Event> _Events = new List<Event>();
+
+        private Roster roster;// different than the way events are saved. could be a problem later
 
         //Timeline Info
         ////////////////////////////////////
@@ -53,9 +57,7 @@ namespace TimelineCreator
             TraitList = new List<string> { "Name", "Birthday", "EyeColor" };
             EventInfoList = new List<string> { "Name", "Date", "Location", "People" };
             LocInfoList = new List<string> { "Name", "Description" };
-            //UpdateEnables();
-            UpdateRoster();
-            UpdateLocations();
+            UpdateEnables(true, true, true);
         }
         private void UpdateUserInput()
         {
@@ -77,10 +79,10 @@ namespace TimelineCreator
 
             GetConfigInfo(ROSTER_NAME, "Location");
             listLocations.Items.Clear();
-            foreach (KeyValuePair<string, List<string>> location in LocationInfo)
+            foreach (Location _location in _Locations)
             {
-                comboEventLocation.Items.Add(location.Key);
-                listLocations.Items.Add(location.Key);
+                comboEventLocation.Items.Add(_location.Name);
+                listLocations.Items.Add(_location.Name);
             }
         }
 
@@ -90,7 +92,10 @@ namespace TimelineCreator
             _bitmap = new Bitmap(panTimeline.Size.Width, panTimeline.Height, PixelFormat.Format32bppPArgb);
             _graphics = Graphics.FromImage(_bitmap);
             SectionTimeline();
-            MapPointsToName("");
+            foreach (string name in NameAndInfo.Keys)
+            {
+                MapPointsToName(name);
+            }
             ///
             // Initialize
 
@@ -142,9 +147,14 @@ namespace TimelineCreator
             
         }
 
-        private void UpdateEnables()
+        private void UpdateEnables(bool updateLoc, bool updateInput, bool updateTimeline)
         {
-            UpdateUserInput();
+            if (updateInput)
+                UpdateUserInput();
+            if (updateLoc)
+                UpdateLocations();
+            if (updateTimeline)
+                CreateTimeline();
         }
         private void GetConfigInfo(string fileName, string category)
         {
@@ -162,6 +172,23 @@ namespace TimelineCreator
                 }
                 return;
             }
+            else if (fileName == ROSTER_NAME)
+            {
+                Roster _Roster;
+                if (File.Exists(ROSTER_NAME))
+                {
+                    XmlSerializer serializer = new XmlSerializer(typeof(Roster));
+
+                    using (StreamReader sr = new StreamReader(ROSTER_NAME))
+                    {
+                        _Roster = (Roster)serializer.Deserialize(sr);
+                        _Locations = _Roster.Locations;
+                        _People = _Roster.People;
+                    }
+                }
+                return;
+            }
+            /*
             XmlNode AppInfo;
             doc.Load(fileName);
             AppInfo = doc.SelectSingleNode("AppInfo");
@@ -183,36 +210,46 @@ namespace TimelineCreator
                 }
                 else if (childNode.Name == "Location")
                 {
-                    if (!LocationInfo.ContainsKey(childNode.SelectSingleNode("Name").InnerText)) // doesn't account for adding new info to a certain name
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<Location>)); // wont work because it will deserialize the whole file. I am essentially reworking this whole thing. Arg!
+// must consolodate the config files and parent them under <SavedInfo> and then access that via SavedInfo.Location.Name etc.
+                    using (StreamReader sr = new StreamReader(ROSTER_NAME))
                     {
-                        LocationInfo.Add(childNode.SelectSingleNode("Name").InnerText, new List<string>());
-                        foreach (string locInfo in LocInfoList)
-                        {
-                            if (locInfo != "Name")
-                                LocationInfo[childNode.SelectSingleNode("Name").InnerText].Add(childNode.SelectSingleNode(locInfo).InnerText);
-                        }
+                        _Locations = (List<Location>)serializer.Deserialize(sr);
                     }
                 }
             }
+            */
         }
 
         private void AddToRosterConfig(string type)
         {
-            doc.Load(ROSTER_NAME);
-            XmlNode AppInfo = doc.SelectSingleNode("AppInfo");
-            XmlElement newInfo = doc.CreateElement(type);
             if (type == "Person")
             {
-                foreach (KeyValuePair<string, string> userInput in RosterUserInput)
-                {
-                    XmlElement newPersonInfo = doc.CreateElement(userInput.Key);
-                    newPersonInfo.InnerText = userInput.Value;
-                    newInfo.AppendChild(newPersonInfo);
-                }
+                if (txtNewPersonName.Text != "" && txtNewPersonEyeColor.Text != "" && txtNewPersonBirthday.Text != "")
+                    _People.Add(new Person(txtNewPersonName.Text, string.Format("{0} \r\n {1}", txtNewPersonBirthday.Text, txtNewPersonEyeColor.Text)));
+                else
+                    MessageBox.Show("Please finish filling out the name information before adding it.");
             }
-            XmlNode root = doc.DocumentElement;
-            root.AppendChild(newInfo);
-            doc.Save(ROSTER_NAME);
+            else if (type == "Location")
+            {// need to change this to match the location data
+                //maybe already covered by the form
+                /*
+                if (txtNewPersonName.Text != "" && txtNewPersonEyeColor.Text != "" && txtNewPersonBirthday.Text != "")
+                    _People.Add(new Person(txtNewPersonName.Text, string.Format("{0} \r\n {1}", txtNewPersonBirthday.Text, txtNewPersonEyeColor.Text)));
+                else
+                    MessageBox.Show("Please finish filling out the name information before adding it.");
+                */
+            }
+            SerializeRoster();
+        }
+        
+        private void SerializeRoster()
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(Roster));
+            using (StreamWriter writer = new StreamWriter(ROSTER_NAME))
+            {
+                serializer.Serialize(writer, new Roster(_Locations, _People));
+            }
         }
         private void AddNewToTimelineConfig()
         {
@@ -246,49 +283,48 @@ namespace TimelineCreator
         {
             GetConfigInfo(TIMELINE_NAME, "Event");
             AddNewToTimelineConfig();
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
 
         private void btnAddNewPerson_Click(object sender, EventArgs e)
         {
             AddToRosterConfig("Person");
-            UpdateRoster();
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
 
         private void txtNewPersonName_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
 
         private void txtNewPersonBirthday_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
 
         private void txtNewPersonEyeColor_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
 
         private void txtEventName_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
 
         private void txtEventLocation_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
 
         private void txtEventTime_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
 
         private void listRoster_SelectedValueChanged(object sender, EventArgs e)
@@ -298,7 +334,7 @@ namespace TimelineCreator
             {
                 txtRoster.Text += NameAndInfo[listRoster.SelectedItem.ToString()][i] + Environment.NewLine;
             }
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
         private void comboLocation_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -306,13 +342,12 @@ namespace TimelineCreator
             if (comboEventLocation.Text == "(+) New Location")
             {
                 AddLocationForm newLocForm = new AddLocationForm();
-                newLocForm.Location_Info = LocationInfo;
-                if (newLocForm.ShowDialog() == DialogResult.OK)
-                {
-
-                }
+                newLocForm.Location_Info = _Locations;
+                if (newLocForm.ShowDialog() == DialogResult.OK){}
+                _Locations = newLocForm.Location_Info;
             }
-            UpdateEnables();
+            UpdateEnables(true, true, true);
+            AddToRosterConfig("Location");
         }
 
 #endregion
@@ -377,11 +412,11 @@ namespace TimelineCreator
                 comboConnectionEvents.Items.Add(_Events[i].Name);
                 ConnectDots(point1, point2, Color.Black, .1f);
             }
-            for (int j = 0; j < LocationInfo.Count; j++)
+            for (int j = 0; j < _Locations.Count; j++)
             {
-                point1 = new Point(0, (int)(height / (LocationInfo.Count + 1)) * (j + 1));
-                point2 = new Point((int)width, (int)(height / (LocationInfo.Count + 1)) * (j + 1));
-                LocToPoints.Add(LocationInfo.Keys.ElementAt(j), (int)(height / (LocationInfo.Count + 1)) * (j + 1));
+                point1 = new Point(0, (int)(height / (_Locations.Count + 1)) * (j + 1));
+                point2 = new Point((int)width, (int)(height / (_Locations.Count + 1)) * (j + 1));
+                LocToPoints.Add(_Locations[j].Name, (int)(height / (_Locations.Count + 1)) * (j + 1));
                 ConnectDots(point1, point2, Color.Black, .1f);
             }
         }
@@ -405,7 +440,7 @@ namespace TimelineCreator
             {
                 MessageBox.Show("Please fill out the information before adding anything");
             }
-            UpdateEnables();
+            UpdateEnables(true, true, true);
         }
     }
 

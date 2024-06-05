@@ -9,19 +9,44 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace TimelineCreator
 {
-    internal class Location
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-    }
-    internal class Person
+    public class Location
     {
         public string Name { get; set; }
         public string Description { get; set; }
 
+        public Location() { }
+        public Location(string name, string description)
+        {
+            Name = name;
+            Description = description;
+        }
+    }
+    public class Person
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+
+        public Person() { }
+        public Person(string name, string description)
+        {
+            Name = name;
+            Description = description;
+        }
+
     }
 
-        
+    [XmlRoot("AppInfo")]
+    public class Roster
+    {
+        public List<Location> Locations { get; set; }
+        public List<Person> People { get; set; }
+        public Roster() { }
+        public Roster(List<Location> locations, List<Person> people)
+        {
+            Locations = locations;
+            People = people;
+        }
+    }
     [XmlRoot("ArrayOfEvent")]
     public class Event
     {
