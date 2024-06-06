@@ -30,12 +30,12 @@ namespace TimelineCreator
         private Dictionary<string, List<Point>> _NameToPoint = new Dictionary<string, List<Point>>(); // find color by using the index of the name in ColorList
         private List<string> TraitList;
         private List<string> EventInfoList;
-        private List<string> LocInfoList;
         private Dictionary<string, int> LocToPoints = new Dictionary<string, int>();
         private Dictionary<string, int> EventToPoints = new Dictionary<string, int>();
         public List<Location> _Locations = new List<Location>();
         public List<Person> _People = new List<Person>();
         public List<Event> _Events = new List<Event>();
+        private List<Label> _Labels = new List<Label>();
 
         private Roster roster;// different than the way events are saved. could be a problem later
 
@@ -56,8 +56,7 @@ namespace TimelineCreator
             InitializeComponent();
             TraitList = new List<string> { "Name", "Birthday", "EyeColor" };
             EventInfoList = new List<string> { "Name", "Date", "Location", "People" };
-            LocInfoList = new List<string> { "Name", "Description" };
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
         private void UpdateUserInput()
         {
@@ -76,25 +75,34 @@ namespace TimelineCreator
 
         private void UpdateLocations()
         {
-
-            GetConfigInfo(ROSTER_NAME, "Location");
             listLocations.Items.Clear();
+            comboEventLocation.Items.Clear();
             foreach (Location _location in _Locations)
             {
                 comboEventLocation.Items.Add(_location.Name);
                 listLocations.Items.Add(_location.Name);
             }
         }
+        private void UpdateEvents()
+        {
+            listEvents.Items.Clear();
+            comboConnectionEvents.Items.Clear();
+            foreach (Event _event in _Events)
+            {
+                comboConnectionEvents.Items.Add(_event.Name);
+                listEvents.Items.Add(_event.Name);
+            }
+        }
 
         private void CreateTimeline()
         {
-            GetConfigInfo(TIMELINE_NAME, "Event");
+            GetConfigInfo(TIMELINE_NAME);
             _bitmap = new Bitmap(panTimeline.Size.Width, panTimeline.Height, PixelFormat.Format32bppPArgb);
             _graphics = Graphics.FromImage(_bitmap);
             SectionTimeline();
-            foreach (string name in NameAndInfo.Keys)
+            foreach (Person person in _People)
             {
-                MapPointsToName(name);
+                MapPointsToName(person.Name);
             }
             ///
             // Initialize
@@ -147,16 +155,22 @@ namespace TimelineCreator
             
         }
 
-        private void UpdateEnables(bool updateLoc, bool updateInput, bool updateTimeline)
+        private void UpdateEnables(bool updateLoc = true, bool updateInput = true, bool updateTimeline = true, bool updateRoster = true, bool updateEvents = true)
         {
             if (updateInput)
                 UpdateUserInput();
+            if (updateLoc || updateRoster)
+                GetConfigInfo(ROSTER_NAME);
             if (updateLoc)
                 UpdateLocations();
+            if (updateRoster)
+                UpdateRoster();
             if (updateTimeline)
                 CreateTimeline();
+            if (updateEvents)
+                UpdateEvents();
         }
-        private void GetConfigInfo(string fileName, string category)
+        private void GetConfigInfo(string fileName)
         {
             //because the timeline data is pulled in a different way this is necessary. Will change later
             if (fileName == TIMELINE_NAME)
@@ -188,37 +202,6 @@ namespace TimelineCreator
                 }
                 return;
             }
-            /*
-            XmlNode AppInfo;
-            doc.Load(fileName);
-            AppInfo = doc.SelectSingleNode("AppInfo");
-            // Access the Personel node
-            XmlNodeList childNodes = AppInfo.ChildNodes;
-            foreach (XmlNode childNode in childNodes)
-            {
-                if (childNode.Name == "Person") // check if this works all in one file
-                {
-                    if (!NameAndInfo.ContainsKey(childNode.SelectSingleNode("Name").InnerText)) // doesn't account for adding new info to a certain name
-                    {
-                        NameAndInfo.Add(childNode.SelectSingleNode("Name").InnerText, new List<string>());
-                        foreach (string trait in TraitList)
-                        {
-                            if (trait != "Name")
-                                NameAndInfo[childNode.SelectSingleNode("Name").InnerText].Add(childNode.SelectSingleNode(trait).InnerText);
-                        }
-                    }
-                }
-                else if (childNode.Name == "Location")
-                {
-                    XmlSerializer serializer = new XmlSerializer(typeof(List<Location>)); // wont work because it will deserialize the whole file. I am essentially reworking this whole thing. Arg!
-// must consolodate the config files and parent them under <SavedInfo> and then access that via SavedInfo.Location.Name etc.
-                    using (StreamReader sr = new StreamReader(ROSTER_NAME))
-                    {
-                        _Locations = (List<Location>)serializer.Deserialize(sr);
-                    }
-                }
-            }
-            */
         }
 
         private void AddToRosterConfig(string type)
@@ -229,16 +212,6 @@ namespace TimelineCreator
                     _People.Add(new Person(txtNewPersonName.Text, string.Format("{0} \r\n {1}", txtNewPersonBirthday.Text, txtNewPersonEyeColor.Text)));
                 else
                     MessageBox.Show("Please finish filling out the name information before adding it.");
-            }
-            else if (type == "Location")
-            {// need to change this to match the location data
-                //maybe already covered by the form
-                /*
-                if (txtNewPersonName.Text != "" && txtNewPersonEyeColor.Text != "" && txtNewPersonBirthday.Text != "")
-                    _People.Add(new Person(txtNewPersonName.Text, string.Format("{0} \r\n {1}", txtNewPersonBirthday.Text, txtNewPersonEyeColor.Text)));
-                else
-                    MessageBox.Show("Please finish filling out the name information before adding it.");
-                */
             }
             SerializeRoster();
         }
@@ -274,67 +247,63 @@ namespace TimelineCreator
         }
         #region UI Interactables
 
-        private void btnShowTimeline_Click(object sender, EventArgs e)
-        {
-            CreateTimeline();
-        }
-
         private void btnAddEvent_Click(object sender, EventArgs e)
         {
-            GetConfigInfo(TIMELINE_NAME, "Event");
+            GetConfigInfo(TIMELINE_NAME);
             AddNewToTimelineConfig();
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
 
         private void btnAddNewPerson_Click(object sender, EventArgs e)
         {
             AddToRosterConfig("Person");
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
 
         private void txtNewPersonName_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
 
         private void txtNewPersonBirthday_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
 
         private void txtNewPersonEyeColor_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
 
         private void txtEventName_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
 
         private void txtEventLocation_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
 
         private void txtEventTime_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
 
         private void listRoster_SelectedValueChanged(object sender, EventArgs e)
         {
             txtRoster.Text = "";
-            for (int i = 0; i < NameAndInfo[listRoster.SelectedItem.ToString()].Count; i++)
+            foreach (Person person in _People)
             {
-                txtRoster.Text += NameAndInfo[listRoster.SelectedItem.ToString()][i] + Environment.NewLine;
+                if (person.Name == listRoster.SelectedItem?.ToString())
+                    txtRoster.Text = person.Description;
             }
-            UpdateEnables(true, true, true);
+            UpdateEnables();
         }
         private void comboLocation_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -346,20 +315,31 @@ namespace TimelineCreator
                 if (newLocForm.ShowDialog() == DialogResult.OK){}
                 _Locations = newLocForm.Location_Info;
             }
-            UpdateEnables(true, true, true);
             AddToRosterConfig("Location");
+            UpdateEnables();
         }
 
-#endregion
+        private void listLocations_SelectedValueChanged(object sender, EventArgs e)
+        {
+            txtRoster.Text = "";
+            foreach (Location location in _Locations)
+            {
+                if (location.Name == listLocations.SelectedItem?.ToString())
+                    txtRoster.Text = location.Description;
+            }
+            UpdateEnables();
+        }
+
+        #endregion
 
         private void UpdateRoster()
         {
-            GetConfigInfo(ROSTER_NAME, "Person");
             listRoster.Items.Clear();
-            foreach (KeyValuePair<string, List<string>> name in NameAndInfo)
+            comboConnectionPeople.Items.Clear();
+            foreach (Person person in _People)
             {
-                listRoster.Items.Add(name.Key);
-                comboConnectionPeople.Items.Add(name.Key);
+                listRoster.Items.Add(person.Name);
+                comboConnectionPeople.Items.Add(person.Name);
             }
         }
 
@@ -400,6 +380,10 @@ namespace TimelineCreator
         {
             EventToPoints.Clear();
             LocToPoints.Clear();
+            foreach (Label label in _Labels)
+            {
+                this.Controls.Remove(label);
+            }
             float width = panTimeline.Width;
             float height = panTimeline.Height;
             Point point1;
@@ -409,8 +393,8 @@ namespace TimelineCreator
                 point1 = new Point((int)(width / (_Events.Count + 1)) * (i + 1), 0);
                 point2 = new Point((int)(width / (_Events.Count + 1)) * (i + 1), (int)Height);
                 EventToPoints.Add(_Events[i].Name, (int)(width / (_Events.Count + 1)) * (i + 1));
-                comboConnectionEvents.Items.Add(_Events[i].Name);
                 ConnectDots(point1, point2, Color.Black, .1f);
+                LabelAxis(point1, false, _Events[i].Date.ToShortDateString());
             }
             for (int j = 0; j < _Locations.Count; j++)
             {
@@ -418,7 +402,21 @@ namespace TimelineCreator
                 point2 = new Point((int)width, (int)(height / (_Locations.Count + 1)) * (j + 1));
                 LocToPoints.Add(_Locations[j].Name, (int)(height / (_Locations.Count + 1)) * (j + 1));
                 ConnectDots(point1, point2, Color.Black, .1f);
+                LabelAxis(point1, true, _Locations[j].Name);
             }
+        }
+
+        private void LabelAxis(Point point, bool location, string LabelText)
+        {
+            Label newLabel = new Label();
+            newLabel.Name = "lbl" + LabelText.Replace(' ', '_');
+            newLabel.Text = LabelText;
+            if (location)
+                newLabel.Location = new Point(point.X + panTimeline.Location.X - 40, point.Y + panTimeline.Location.Y);
+            else
+                newLabel.Location = new Point(point.X + panTimeline.Location.X, point.Y + panTimeline.Location.Y - newLabel.Height);
+            this.Controls.Add(newLabel);
+            _Labels.Add(newLabel);
         }
 
         #endregion
@@ -440,7 +438,18 @@ namespace TimelineCreator
             {
                 MessageBox.Show("Please fill out the information before adding anything");
             }
-            UpdateEnables(true, true, true);
+            UpdateEnables();
+        }
+
+        private void listEvents_SelectedValueChanged(object sender, EventArgs e)
+        {
+            txtRoster.Text = "";
+            foreach (Event _event in _Events)
+            {
+                if (_event.Name == listEvents.SelectedItem?.ToString())
+                    txtRoster.Text = string.Format("Date: {0}\nLocation: {1}\nPeople: {2}", _event.Date.ToShortDateString(), _event.Location, string.Join(",", _event.People));
+            }
+            UpdateEnables();
         }
     }
 
