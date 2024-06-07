@@ -26,16 +26,17 @@ namespace TimelineCreator
         private Dictionary<string, string> TimelineUserInput = new Dictionary<string, string>();
         private List<string> TimelineDates = new List<string>();
         private Dictionary<string, List<string>> NameAndInfo = new Dictionary<string, List<string>>();
-        //private Dictionary<string, List<string>> LocationInfo = new Dictionary<string, List<string>>();
-        private Dictionary<string, List<Point>> _NameToPoint = new Dictionary<string, List<Point>>(); // find color by using the index of the name in ColorList
+        private Dictionary<string, List<Point>> _NameToPoints = new Dictionary<string, List<Point>>(); // find color by using the index of the name in ColorList
+        private Dictionary<string, Color> _NameToColor = new Dictionary<string, Color>();
         private List<string> TraitList;
         private List<string> EventInfoList;
         private Dictionary<string, int> LocToPoints = new Dictionary<string, int>();
-        private Dictionary<string, int> EventToPoints = new Dictionary<string, int>();
+        private Dictionary<DateTime, int> DateToPoints = new Dictionary<DateTime, int>();
         public List<Location> _Locations = new List<Location>();
         public List<Person> _People = new List<Person>();
         public List<Event> _Events = new List<Event>();
         private List<Label> _Labels = new List<Label>();
+        private Dictionary<DateTime, List<Event>> _DateToEvents;
 
         private Roster roster;// different than the way events are saved. could be a problem later
 
@@ -58,6 +59,9 @@ namespace TimelineCreator
             EventInfoList = new List<string> { "Name", "Date", "Location", "People" };
             UpdateEnables();
         }
+
+
+        #region Updates
         private void UpdateUserInput()
         {
             RosterUserInput.Clear();
@@ -77,82 +81,38 @@ namespace TimelineCreator
         {
             listLocations.Items.Clear();
             comboEventLocation.Items.Clear();
+            comboEventLocation.Items.Add("(+) New Location");
             foreach (Location _location in _Locations)
             {
                 comboEventLocation.Items.Add(_location.Name);
                 listLocations.Items.Add(_location.Name);
             }
         }
+
+        private void UpdateRoster()
+        {
+            listRoster.Items.Clear();
+            comboConnectionPeople.Items.Clear();
+            foreach (Person person in _People)
+            {
+                listRoster.Items.Add(person.Name);
+                comboConnectionPeople.Items.Add(person.Name);
+            }
+        }
+
         private void UpdateEvents()
         {
             listEvents.Items.Clear();
             comboConnectionEvents.Items.Clear();
-            foreach (Event _event in _Events)
+            foreach (KeyValuePair<DateTime, List<Event>> _dateToEvents in _DateToEvents)
             {
-                comboConnectionEvents.Items.Add(_event.Name);
-                listEvents.Items.Add(_event.Name);
-            }
-        }
-
-        private void CreateTimeline()
-        {
-            GetConfigInfo(TIMELINE_NAME);
-            _bitmap = new Bitmap(panTimeline.Size.Width, panTimeline.Height, PixelFormat.Format32bppPArgb);
-            _graphics = Graphics.FromImage(_bitmap);
-            SectionTimeline();
-            foreach (Person person in _People)
-            {
-                MapPointsToName(person.Name);
-            }
-            ///
-            // Initialize
-
-            Color PersonColor = Color.Red;
-            Point LastUsedPoint;
-            foreach (KeyValuePair<string, List<Point>> PointsPerName in _NameToPoint)
-            {
-                LastUsedPoint = new Point(0, 0);
-                foreach (Point point in PointsPerName.Value)
+                foreach (Event _event in _dateToEvents.Value)
                 {
-                    DrawDot(point, PersonColor, 10);
-                    if (LastUsedPoint != new Point(0, 0))
-                    {
-                        ConnectDots(LastUsedPoint, point, PersonColor);
-                    }
-                    LastUsedPoint = point;
-                }
-                PersonColor = IterateColor(PersonColor); // iterates colors for each new person
-            }
-            //////////////////////////////////////////////////////////////////////////
-        }
-
-        private void MapPointsToName(string name)
-        {
-            //It seems like the best way to do this is to update the timeline document to make events
-            // example/////////////////////////////////////////
-            /*
-            List<Point> LucyPoints = new List<Point>() { new Point(10, 20), new Point(100, 200), new Point(200, 150), new Point(300, 100) };
-            List<Point> BoPoints = new List<Point>() { new Point(10, 250), new Point(100, 10), new Point(200, 400), new Point(300, 100) };
-            _NameToPoint.Add("Lucy", LucyPoints);
-            _NameToPoint.Add("Bo", BoPoints);
-            */
-            //////////////////////////////////////////////
-            ///
-            //Add a sorter for the dates
-
-                //
-            foreach (Event _event in _Events)
-            {
-                if (_event.People.Contains(name))
-                {
-                    if (!_NameToPoint.ContainsKey(name))
-                        _NameToPoint.Add(name, new List<Point>());
-                    _NameToPoint[name].Add(new Point(EventToPoints[_event.Name], LocToPoints[_event.Location]));
-                    // to find the value of this point I think we have to save the grid of points when sectioning the timeline so that
-                    // we can find them in the form of Dictionary<string location, int heightvalueforlocation> and Dictionary<string Event, int widthvalueforEvent>
+                    comboConnectionEvents.Items.Add(_event.Name);
+                    if (!listEvents.Items.Contains(_event.Date.ToShortDateString()))
+                        listEvents.Items.Add(_event.Date.ToShortDateString());
                 }
             }
-            
         }
 
         private void UpdateEnables(bool updateLoc = true, bool updateInput = true, bool updateTimeline = true, bool updateRoster = true, bool updateEvents = true)
@@ -170,6 +130,76 @@ namespace TimelineCreator
             if (updateEvents)
                 UpdateEvents();
         }
+        private void CreateTimeline()
+        {
+            GetConfigInfo(TIMELINE_NAME);
+            _bitmap = new Bitmap(panTimeline.Size.Width, panTimeline.Height, PixelFormat.Format32bppPArgb);
+            _graphics = Graphics.FromImage(_bitmap);
+            SectionTimeline();
+            _NameToPoints.Clear();
+            foreach (Person person in _People)
+            {
+                MapPointsToName(person.Name);
+            }
+
+            Color PersonColor = Color.Red;
+            foreach (KeyValuePair<string, List<Point>> PointsPerName in _NameToPoints)
+            {
+                DrawPersonPath(PointsPerName.Key, PersonColor);
+                if (!_NameToColor.ContainsKey(PointsPerName.Key))
+                    _NameToColor.Add(PointsPerName.Key, PersonColor);
+                PersonColor = IterateColor(PersonColor); // iterates colors for each new person
+            }
+        }
+       
+        #endregion
+
+
+        private void DrawPersonPath(string name, Color PersonColor)
+        {
+            Point LastUsedPoint = new Point(0, 0);
+            foreach (Point point in _NameToPoints[name])
+            {
+                DrawDot(point, PersonColor, 10);
+                if (LastUsedPoint != new Point(0, 0))
+                {
+                    ConnectDots(LastUsedPoint, point, PersonColor);
+                }
+                LastUsedPoint = point;
+            }
+        }
+
+        private void MapPointsToName(string name)
+        { 
+             foreach (KeyValuePair<DateTime, List<Event>> _dateToEvents in _DateToEvents)
+            {
+                Point overridePoint = new Point(0, 0);
+                int index = 1;
+                foreach (Event _event in _dateToEvents.Value)
+                {
+                    if (_event.People.Contains(name))
+                    {
+                        if (!_NameToPoints.ContainsKey(name))
+                            _NameToPoints.Add(name, new List<Point>());
+                        _NameToPoints[name].Add(new Point(DateToPoints[_event.Date], LocToPoints[_event.Location]));
+                        break;
+                    }
+                    else 
+                    {
+                        if (_NameToPoints.ContainsKey(name)) 
+                        {
+
+                            overridePoint = new Point(DateToPoints[_event.Date], _NameToPoints[name].Last().Y);
+                            if (index == _dateToEvents.Value.Count)
+                                _NameToPoints[name].Add(overridePoint); //only adds the 'didnt move locations' point if all events at the date have been checked.
+                        }
+                    }
+                    index++;
+                }
+            }
+            
+        }
+
         private void GetConfigInfo(string fileName)
         {
             //because the timeline data is pulled in a different way this is necessary. Will change later
@@ -182,6 +212,7 @@ namespace TimelineCreator
                     using (StreamReader sr = new StreamReader(TIMELINE_NAME))
                     {
                         _Events = (List<Event>)serializer.Deserialize(sr);
+                        _Events.Sort((e1, e2) => e1.Date.CompareTo(e2.Date));
                     }
                 }
                 return;
@@ -267,22 +298,22 @@ namespace TimelineCreator
 
         private void txtNewPersonName_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            //UpdateEnables();
         }
 
         private void txtNewPersonBirthday_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            //UpdateEnables();
         }
 
         private void txtNewPersonEyeColor_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            //UpdateEnables();
         }
 
         private void txtEventName_TextChanged(object sender, EventArgs e)
         {
-            UpdateEnables();
+            //UpdateEnables();
         }
 
         private void txtEventLocation_TextChanged(object sender, EventArgs e)
@@ -301,9 +332,12 @@ namespace TimelineCreator
             foreach (Person person in _People)
             {
                 if (person.Name == listRoster.SelectedItem?.ToString())
+                {
                     txtRoster.Text = person.Description;
+                    DrawPersonPath(person.Name, _NameToColor[person.Name]);
+                }
             }
-            UpdateEnables();
+            UpdateEnables(true, true, false); // I dont know why this isnt highlighting the chosen path.
         }
         private void comboLocation_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -314,9 +348,9 @@ namespace TimelineCreator
                 newLocForm.Location_Info = _Locations;
                 if (newLocForm.ShowDialog() == DialogResult.OK){}
                 _Locations = newLocForm.Location_Info;
+                AddToRosterConfig("Location");
+                UpdateEnables(false);
             }
-            AddToRosterConfig("Location");
-            UpdateEnables();
         }
 
         private void listLocations_SelectedValueChanged(object sender, EventArgs e)
@@ -327,21 +361,51 @@ namespace TimelineCreator
                 if (location.Name == listLocations.SelectedItem?.ToString())
                     txtRoster.Text = location.Description;
             }
+            UpdateEnables(true, true, false);
+        }
+        private void btnAddPeopleToEvent_Click(object sender, EventArgs e)
+        {
+            if (comboConnectionPeople.Text != "" && comboConnectionEvents.Text != "")
+            {
+                foreach (Event _event in _Events)
+                {
+                    if (_event.Name == comboConnectionEvents.Text)
+                    {
+                        _event.People.Add(comboConnectionPeople.Text);
+                    }
+                }
+                SerializeTimeline();
+            }
+            else
+            {
+                MessageBox.Show("Please fill out the information before adding anything");
+            }
             UpdateEnables();
         }
 
-        #endregion
-
-        private void UpdateRoster()
+        private void listEvents_SelectedValueChanged(object sender, EventArgs e)
         {
-            listRoster.Items.Clear();
-            comboConnectionPeople.Items.Clear();
-            foreach (Person person in _People)
+            txtRoster.Text = "";
+            foreach (KeyValuePair<DateTime, List<Event>> _dateToEvents in _DateToEvents)
             {
-                listRoster.Items.Add(person.Name);
-                comboConnectionPeople.Items.Add(person.Name);
+                foreach (Event _event in _dateToEvents.Value)
+                {
+                    if (_dateToEvents.Value.Count > 1)
+                    {
+                        if (_event.Date.ToShortDateString() == listEvents.SelectedItem?.ToString())
+                            txtRoster.Text += string.Format("Name: {0}\r\nLocation: {1}\r\nPeople: {2}\r\n\r\n", _event.Name, _event.Location, string.Join(",", _event.People));
+                    }
+                    else
+                    {
+                        if (_event.Date.ToShortDateString() == listEvents.SelectedItem?.ToString())
+                            txtRoster.Text = string.Format("Name: {0}\r\nLocation: {1}\r\nPeople: {2}", _event.Name, _event.Location, string.Join(",", _event.People));
+                    }
+                }
             }
+            UpdateEnables(true, true, false);
         }
+
+        #endregion
 
         #region Timeline Creation 
         private Color IterateColor(Color color)
@@ -375,10 +439,9 @@ namespace TimelineCreator
             panTimeline.BackgroundImage = _bitmap;
         }
 
-
         private void SectionTimeline()
         {
-            EventToPoints.Clear();
+            DateToPoints.Clear();
             LocToPoints.Clear();
             foreach (Label label in _Labels)
             {
@@ -388,13 +451,27 @@ namespace TimelineCreator
             float height = panTimeline.Height;
             Point point1;
             Point point2;
-            for (int i = 0; i < _Events.Count; i++)
+            _DateToEvents = new Dictionary<DateTime, List<Event>>(); // maybe have to use Dictionary<DateTime EventDate, List<string> EventNames> for this one
+            Dictionary<int, DateTime> dateIndexer = new Dictionary<int, DateTime>();
+            int index = 0;
+            //find the amount of unique dates
+            foreach (Event _event in _Events)
             {
-                point1 = new Point((int)(width / (_Events.Count + 1)) * (i + 1), 0);
-                point2 = new Point((int)(width / (_Events.Count + 1)) * (i + 1), (int)Height);
-                EventToPoints.Add(_Events[i].Name, (int)(width / (_Events.Count + 1)) * (i + 1));
+                if (!_DateToEvents.ContainsKey(_event.Date))
+                {
+                    _DateToEvents.Add(_event.Date, new List<Event>());// not instituted yet but this will allow us to have multiple events on one date.
+                    dateIndexer.Add(index, _event.Date); //im too tired to know if this makes snese.
+                    index++;
+                }
+                _DateToEvents[_event.Date].Add(_event);
+            }
+            for (int i = 0; i < _DateToEvents.Count; i++)
+            {
+                point1 = new Point((int)(width / (_DateToEvents.Count + 1)) * (i + 1), 0);
+                point2 = new Point((int)(width / (_DateToEvents.Count + 1)) * (i + 1), (int)Height);
+                DateToPoints.Add(dateIndexer[i], (int)(width / (_DateToEvents.Count + 1)) * (i + 1));
                 ConnectDots(point1, point2, Color.Black, .1f);
-                LabelAxis(point1, false, _Events[i].Date.ToShortDateString());
+                LabelAxis(point1, false, dateIndexer[i].ToShortDateString());
             }
             for (int j = 0; j < _Locations.Count; j++)
             {
@@ -421,36 +498,6 @@ namespace TimelineCreator
 
         #endregion
 
-        private void btnAddPeopleToEvent_Click(object sender, EventArgs e)
-        {
-            if (comboConnectionPeople.Text != "" && comboConnectionEvents.Text != "")
-            {
-                foreach (Event _event in _Events)
-                {
-                    if (_event.Name == comboConnectionEvents.Text)
-                    {
-                        _event.People.Add(comboConnectionPeople.Text);
-                    }
-                }
-                SerializeTimeline();
-            }
-            else
-            {
-                MessageBox.Show("Please fill out the information before adding anything");
-            }
-            UpdateEnables();
-        }
-
-        private void listEvents_SelectedValueChanged(object sender, EventArgs e)
-        {
-            txtRoster.Text = "";
-            foreach (Event _event in _Events)
-            {
-                if (_event.Name == listEvents.SelectedItem?.ToString())
-                    txtRoster.Text = string.Format("Date: {0}\nLocation: {1}\nPeople: {2}", _event.Date.ToShortDateString(), _event.Location, string.Join(",", _event.People));
-            }
-            UpdateEnables();
-        }
     }
 
 }

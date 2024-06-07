@@ -323,9 +323,9 @@
             this.lblEvents.AutoSize = true;
             this.lblEvents.Location = new System.Drawing.Point(913, 131);
             this.lblEvents.Name = "lblEvents";
-            this.lblEvents.Size = new System.Drawing.Size(62, 20);
+            this.lblEvents.Size = new System.Drawing.Size(56, 20);
             this.lblEvents.TabIndex = 18;
-            this.lblEvents.Text = "Events:";
+            this.lblEvents.Text = "Dates:";
             // 
             // listEvents
             // 
@@ -355,7 +355,7 @@
             this.Controls.Add(this.grpAddNewPerson);
             this.Controls.Add(this.grpAddEvent);
             this.Name = "MainForm";
-            this.Text = "Form1";
+            this.Text = "Track your characters across time.";
             this.grpAddEvent.ResumeLayout(false);
             this.grpAddEvent.PerformLayout();
             this.grpAddNewPerson.ResumeLayout(false);
